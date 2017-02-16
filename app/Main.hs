@@ -26,7 +26,7 @@ l1c = [220, 220, 255]           -- 1 мм шаг
 l5c = [210, 210, 255]           -- 5 мм шаг
 l1cf = [240, 255, 255]           -- 1 мм шаг на полях
 l5cf = [240, 245, 255]           -- 5 мм шаг на полях
-cldiv = [150, 230, 255]             -- разрез
+cldiv = [250, 230, 255]             -- разрез
 
 mm1 = 12
 mm5 = 59
@@ -62,16 +62,17 @@ lft = (d1b5, base)
  | | | | ||
 -}
 lineStep11115 = tc line_px $ cm [(d1b5, base), (l1, l1c), (a1, ze l1c), (d1b5, base), (l5, l5c)]
---ulineStep11115 c1 c5 = cm [(d1b5, base), (l1, c1), (a1, ze c1), (d1b5, base), (l5, c5)]
+ulineStep11115first c1 c5 = cm [(d1b5, base), (l1, c1), (a1, ze c1), (d1b5, base)]
 ulineStep11115 c1 c5 = cm [(d1b5, base), (l1, c1), (a1, ze c1), (d1b5, base), (l5, c5)]
 lineFieldFull = tc line_px $ ulineStep11115 l1cf l5cf
-lineMidFull = take line_px $ (ulineStep11115 l1cf l5cf) ++ (cr ((2480 `div` mm5)-2) $ cm [(d1b5, base), (l1, l1c), (a1, ze l1c), (d1b5, base), (l5, l5c)]) ++ (cr 2 $ ulineStep11115 l1cf l5cf)
+lineMidFull = take line_px $ (ulineStep11115first l1cf l5cf) ++ cr l5 l5c ++ (cr ((2480 `div` mm5)-2) $ cm [(d1b5, base), (l1, l1c), (a1, ze l1c), (d1b5, base), (l5, l5c)]) ++ (cr 2 $ ulineStep11115 l1cf l5cf)
 {-
 _|_|_|_|_||
 -}
 vertLinesField = cm [(d5, lineFieldFull), (l5, line5gFields l5cf), (d5, lineFieldFull)] -- поле слева
 vertLinesMid = cm [(d5, lineMidFull), (l5, line5gFields l5c)]
-vfull = vertLinesField ++ cr l5 (line5gFields l5c) ++  cr (hnOfmm5-3) vertLinesMid  
+vfull = vertLinesField ++ cm [(l5, line5gFields l5c), (hnOfmm5-3, vertLinesMid), (d5, lineFieldFull)]
+pageA5full = vfull ++ cr 18 (line5G base)
 {-
     _|_|_|_|_||
     _|_|_|_|_||
@@ -123,5 +124,5 @@ transcodeToPng pathIn pathOut = do
 
 main ∷ IO ()
 main = do
-    let vv = DVS.fromList $vfull
-    CP.savePngImage "out/mm.png" $ CP.ImageRGB8 (Image widthA4 (40*mm5) vv:: Image PixelRGB8)
+    let vv = DVS.fromList $ vfull ++ cr 18 (line5G base) ++ cr 2 (line5G cldiv)++vfull ++ cr 18 (line5G base)
+    CP.savePngImage "out/mm.png" $ CP.ImageRGB8 (Image widthA4 (heightA4) vv:: Image PixelRGB8)
